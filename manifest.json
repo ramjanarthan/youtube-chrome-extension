@@ -1,18 +1,13 @@
 {
   "manifest_version": 2,
 
-  "name": "youtube-chrome-extension",
+  "name": "Yellow",
   "description": "This extension allows the user to enter a phrase, and jump to the point in the video that matches that phrase.",
   "version": "1.0",
 
   "browser_action": {
     "default_icon": "icon.png",
-    "default_title": "chromey",
-    "popup": "extension.html"
-  },
-  
-  "permissions": [
-    "http://youtube.com/*",
-    "tabs"
-    ]
+    "default_title": "Yellow",
+    "default_popup": "extension.html"
+  }
 }

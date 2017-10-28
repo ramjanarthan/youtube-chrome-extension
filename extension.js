@@ -1,5 +1,10 @@
 document.addEventListener('DOMContentLoaded', function() {
-	chrome.tabs.getSelected(null, function(tab){
-    console.log(tab);
-	});
+	var submitButton = document.getElementById('mybutton');
+	var input = document.getElementById('input');
+});
+
+function onMyButtonClick(){
+	var input = document.getElementById('input');
+	var text = input.value;
+
 }
