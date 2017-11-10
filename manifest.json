@@ -4,11 +4,7 @@
   "name": "Yellow",
   "description": "This extension allows the user to enter a phrase, and jump to the point in the video that matches that phrase.",
   "version": "1.0",
-  “content_scripts”: [
-    {
-    “matches”: [“https://www.youtube.com/*"],
-    "js": ["jquery-2.2.0.min.js", “extension.js”]
-    }  ],
+
   "browser_action": {
     "default_icon": "icon.png",
     "default_title": "Yellow",
