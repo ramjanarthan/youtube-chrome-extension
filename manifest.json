@@ -4,10 +4,17 @@
   "name": "Yellow",
   "description": "This extension allows the user to enter a phrase, and jump to the point in the video that matches that phrase.",
   "version": "1.0",
-
+  "permissions": [
+    "webRequest",
+    "<all_urls>",
+    "storage"
+  ],
   "browser_action": {
     "default_icon": "icon.png",
     "default_title": "Yellow",
     "default_popup": "extension.html"
+  },
+  "background": {
+    "scripts": ["background.js"]
   }
 }
