@@ -18,6 +18,9 @@ window.addEventListener('click', function(_e) {
 				console.log('Couldnt find any accurate results')
 			}
 	}
+
+
+	$(".ytp-play-progress").css("background-color", "yellow"); 
 });
 
 /*
