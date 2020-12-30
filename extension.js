@@ -1,5 +1,7 @@
 var captions = []
 
+var start = 0
+
 window.addEventListener('click', function(_e) {
 	console.log("Click registered")
     var target = _e.target;
@@ -8,6 +10,7 @@ window.addEventListener('click', function(_e) {
 		case 'mybutton':
 			let searchText = document.getElementById('input').value
 			let results = findClosestMatches(searchText)
+
 
 			if (results.length > 0) {
 				let times = results.reduce (function(prev, curr) {
@@ -19,8 +22,7 @@ window.addEventListener('click', function(_e) {
 			}
 	}
 
-
-	$(".ytp-play-progress").css("background-color", "yellow"); 
+	addCaptionSliceIndicator("_")
 });
 
 /*
@@ -64,3 +66,21 @@ browser.storage.local.get()
 			console.log("Nothing found")
 		}
 	})
+
+function addCaptionSliceIndicator(captionSlice) {
+	console.log("trying to add")
+	jQuery('<div/>', {
+		id: 'yte-captionslice-timestamp',
+		css: {
+			'background-color': 'blue',
+			'width': '5',
+			'height': '100%',
+			'left': start,
+			'top': 0,
+			'z-index': 40,
+			'position': 'relative',
+		}
+	}).appendTo(".ytp-progress-list")
+
+	start = start + 50
+}
