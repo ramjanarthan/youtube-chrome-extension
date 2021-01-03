@@ -78,7 +78,7 @@ function addCaptionSliceIndicator(captionSlice) {
 			'left': start,
 			'top': 0,
 			'z-index': 40,
-			'position': 'relative',
+			'position': 'absolute',
 		}
 	}).appendTo(".ytp-progress-list")
 
