@@ -11,7 +11,7 @@ window.addEventListener('click', function(_e) {
 			let searchText = document.getElementById('input').value
 			let results = findClosestMatches(searchText)
 
-
+			
 			if (results.length > 0) {
 				let times = results.reduce (function(prev, curr) {
 					return prev + " " + `${curr["startTime"]/1000} secs, `
@@ -22,7 +22,9 @@ window.addEventListener('click', function(_e) {
 			}
 	}
 
-	addCaptionSliceIndicator("_")
+	let totalTime = getTotalTime()
+	let timeInSeconds = convertYoutubeEndTimeToSeconds(totalTime)
+	console.log(`Captured time:  ${totalTime} in seconds: ${timeInSeconds}`)
 });
 
 /*
@@ -68,7 +70,6 @@ browser.storage.local.get()
 	})
 
 function addCaptionSliceIndicator(captionSlice) {
-	console.log("trying to add")
 	jQuery('<div/>', {
 		id: 'yte-captionslice-timestamp',
 		css: {
@@ -83,4 +84,37 @@ function addCaptionSliceIndicator(captionSlice) {
 	}).appendTo(".ytp-progress-list")
 
 	start = start + 50
+}
+
+function getTotalTime() {
+    let endTime = $(".ytp-bound-time-right").text()
+
+    if (endTime) {
+        return endTime
+    } else {
+        return null
+    }
+}
+
+/*
+	time: dd:hh:mm:ss
+*/
+function convertYoutubeEndTimeToSeconds(time) {
+	if (!time) {
+		return 0
+	}
+
+	let components = time.split(':')
+	let secondsMultiplier = [1, 60, 3600, 86400]
+	var multiplierIndex = 0
+
+	var seconds = 0
+
+	while (components.length > 0) {
+		let curr = parseInt(components.pop())
+		seconds += (curr * secondsMultiplier[multiplierIndex])
+		multiplierIndex += 1
+	}
+
+	return seconds
 }
