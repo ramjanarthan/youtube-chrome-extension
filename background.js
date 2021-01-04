@@ -46,11 +46,19 @@ CaptionSlice {
 
 function generateCaptionSlices(jsonResponse) {
     if (jsonResponse["events"]) {
-        return jsonResponse["events"].map(transformJSONToCaptionSlice)
+        return jsonResponse["events"]
+            .map(transformJSONToCaptionSlice)
+            .filter(function(slice) {
+              return slice != null
+            })
     }
 }
 
 function transformJSONToCaptionSlice(eventJson) {
+    if (!eventJson["segs"]) {
+        return null
+    }
+
     let text = eventJson["segs"].reduce(function(prev, curr) {
         return prev + " " + curr.utf8
     })  
