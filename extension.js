@@ -1,17 +1,24 @@
-var captions = []
+// Observations
+var currentTabURL = ""
 
-var start = 0
+// browser.tabs.onActivated.addListener(tab => {
+//     browser.tabs.get(tab.tabId, current_tab_info => {
+//         currentTabURL = current_tab_info.url
+//     })
+// })
 
-window.addEventListener('click', function(_e) {
-	console.log("Click registered")
-    var target = _e.target;
+browser.runtime.onMessage.addListener((msg, sender, repsonse) => {
+	if (msg.command == 'confirm') {
+		processSearchRequest(msg.input, msg.url)
+	}
+})
 
-    switch(target.id) {
-		case 'mybutton':
-			let searchText = document.getElementById('input').value
-			let results = findClosestMatches(searchText)
+// Search Request Handling
+function processSearchRequest(query, activeURL) {
+	console.log(`Processing search request with query: ${query} url: ${activeURL}`)
 
-			
+	findClosestMatches(query, activeURL)
+		.then((results) => {
 			if (results.length > 0) {
 				let times = results.reduce (function(prev, curr) {
 					return prev + " " + `${curr["startTime"]/1000} secs, `
@@ -20,12 +27,12 @@ window.addEventListener('click', function(_e) {
 			} else {
 				console.log('Couldnt find any accurate results')
 			}
-	}
+		})
 
 	let totalTime = getTotalTime()
-	let timeInSeconds = convertYoutubeEndTimeToSeconds(totalTime)
+	let timeInSeconds = convertTimestampToSeconds(totalTime)
 	console.log(`Captured time:  ${totalTime} in seconds: ${timeInSeconds}`)
-});
+}	
 
 /*
 
@@ -36,56 +43,66 @@ CaptionSlice {
 };
 
 */
-function findClosestMatches(searchText) {
+function findClosestMatches(searchText, url) {
 	var result = []
 
 	if (searchText.length <= 0) {
-		return result
+		return new Promise((resolve, _) => {
+			resolve(result)
+		})
 	}
 
-	captions.forEach(function(captionSlice) {
-		if(captionSlice["text"].utf8.includes(searchText)) {
-			result.push(captionSlice)
-		}
-	})
+	return getCaptionsForURL(url)
+		.then((captionSlices) => {
+			if (!captionSlices) {
+				return result
+			}
+			 
+			captionSlices.forEach(function(captionSlice) {
+				if(captionSlice["text"].utf8.includes(searchText)) {
+					result.push(captionSlice)
+				}
+			})
+		
+			return result
+		})
+}
 
-	return result
+
+function getCaptionsForURL(url) {
+	return browser.storage.local.get([url])
+		.then((data) => {
+			return data[url]
+		})
 }
 
 console.log("Hello YT")
 
-browser.storage.local.get()
-	.then(function(_data) {
-		let windowLocation = window.location.href
+// MARK: UI Manipulation 
+function displayCaptionSlices(slices) {
 
-		console.log(`Getting for captionSlices ${_data}`)
-		//console.log(`Trying to get data for : ${windowLocation}`)
+}
 
-		if (_data["captionSlices"]) {
-			console.log(`Here's the data: ${_data["captionSlices"]}`)
-			captions = _data["captionSlices"]
-		} else {
-			console.log("Nothing found")
-		}
-	})
+function hideCaptionSlices() {
 
-function addCaptionSliceIndicator(captionSlice) {
+}
+
+function addCaptionSliceIndicator(captionSlice, leftPosition) {
 	jQuery('<div/>', {
 		id: 'yte-captionslice-timestamp',
 		css: {
 			'background-color': 'blue',
 			'width': '5',
 			'height': '100%',
-			'left': start,
+			'left': leftPosition,
 			'top': 0,
 			'z-index': 40,
 			'position': 'absolute',
 		}
 	}).appendTo(".ytp-progress-list")
-
-	start = start + 50
 }
 
+// MARK: Time Calculations
 function getTotalTime() {
     let endTime = $(".ytp-bound-time-right").text()
 
@@ -98,8 +115,9 @@ function getTotalTime() {
 
 /*
 	time: dd:hh:mm:ss
+	Day: Hour: Minutes: Seconds
 */
-function convertYoutubeEndTimeToSeconds(time) {
+function convertTimestampToSeconds(time) {
 	if (!time) {
 		return 0
 	}

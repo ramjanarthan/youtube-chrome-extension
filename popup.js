@@ -5,7 +5,7 @@ $(function() {
             var text = $('#myInput').val()
             browser.tabs.sendMessage(activeTab.id, { 
                 command: "confirm", 
-                activeTab: activeTab,
+                url: activeTab.url,
                 input: text
             })
         })
