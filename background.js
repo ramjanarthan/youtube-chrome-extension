@@ -121,9 +121,11 @@ function transformJSONToCaptionSlice(eventJson) {
         return null
     }
 
-    let text = eventJson["segs"].reduce(function(prev, curr) {
-        return prev + " " + curr.utf8
-    })  
+    let text = eventJson["segs"]
+        .reduce(function(prev, curr) {
+            let currString = curr["utf8"] ? curr["utf8"] : ""
+            return prev + " " + currString
+        }, "")
 
     return {
         "startTime": eventJson["tStartMs"],
