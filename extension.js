@@ -16,6 +16,7 @@ browser.runtime.onMessage.addListener((msg, sender, repsonse) => {
 // Search Request Handling
 function processSearchRequest(query, activeURL) {
 	console.log(`Processing search request with query: ${query} url: ${activeURL}`)
+	hideCaptionSlices()
 
 	findClosestMatches(query, activeURL)
 		.then((results) => {
@@ -108,7 +109,7 @@ function displayCaptionSlices(slices) {
 }
 
 function hideCaptionSlices() {
-
+	$(".yte-captionslice-timestamp").remove()
 }
 
 function calculateLeftOffsetForCaptionSlice(captionSlice, totalTime) {
@@ -133,7 +134,7 @@ function calculateLeftOffsetForCaptionSlice(captionSlice, totalTime) {
 
 function addCaptionSliceIndicator(leftPosition) {
 	jQuery('<div/>', {
-		id: 'yte-captionslice-timestamp',
+		class: 'yte-captionslice-timestamp',
 		css: {
 			'background-color': 'blue',
 			'width': '5',
