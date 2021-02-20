@@ -23,7 +23,9 @@ function processSearchRequest(query, activeURL) {
 				let times = results.reduce (function(prev, curr) {
 					return prev + " " + `${curr["startTime"]/1000} secs, `
 				}, "")
+
 				console.log(`Here are your best times: ${times}`)
+				displayCaptionSlices(results)
 			} else {
 				console.log('Couldnt find any accurate results')
 			}
@@ -44,34 +46,47 @@ CaptionSlice {
 
 */
 function findClosestMatches(searchText, url) {
-	var result = []
+	console.log(`findClosestMatches ${searchText}`)
 
 	if (searchText.length <= 0) {
 		return new Promise((resolve, _) => {
-			resolve(result)
+			resolve([])
 		})
 	}
 
 	return getCaptionsForURL(url)
 		.then((captionSlices) => {
+			var result = []
+
+			console.log(`Reaching A ${captionSlices}`)
+			console.log(`Bool ${!captionSlices}`)
+
 			if (!captionSlices) {
+				console.log(`no slices ${result}`)
 				return result
 			}
-			 
-			captionSlices.forEach(function(captionSlice) {
-				if(captionSlice["text"].utf8.includes(searchText)) {
+
+			captionSlices.forEach(captionSlice => {
+				console.log(`Reaching X ${captionSlice}`)
+
+				if(captionSlice["text"].includes(searchText)) {
+					console.log(`Reaching Y`)
+
 					result.push(captionSlice)
 				}
 			})
 		
+			console.log(`Reaching C ${result}`)
 			return result
 		})
 }
 
 
 function getCaptionsForURL(url) {
+	console.log(`getCaptionsForURL ${url}`)
 	return browser.storage.local.get([url])
 		.then((data) => {
+			console.log(`data ${data[url]}`)
 			return data[url]
 		})
 }
@@ -80,14 +95,43 @@ console.log("Hello YT")
 
 // MARK: UI Manipulation 
 function displayCaptionSlices(slices) {
-
+	let totalTime = getTotalTimeInSeconds()
+	if(!totalTime) {
+		console.error("Couldnt find total time")
+		return
+	}
+	
+	slices.forEach (slice => {
+		let offset = calculateLeftOffsetForCaptionSlice(slice, totalTime)
+		addCaptionSliceIndicator(offset)
+	})
 }
 
 function hideCaptionSlices() {
 
 }
 
-function addCaptionSliceIndicator(captionSlice, leftPosition) {
+function calculateLeftOffsetForCaptionSlice(captionSlice, totalTime) {
+	if (!totalTime) {
+		return null
+	}
+
+
+	let sliceTimeInSeconds = captionSlice["startTime"] / 1000
+	console.log(`sliceTimeInSeconds ${sliceTimeInSeconds}`)
+	console.log(`totalTime ${totalTime}`)
+
+	console.log(`container width ${$(".ytp-chapters-container").width()}`)
+	console.log(`marker width ${$(".ytp-timed-markers-container").width()}`)
+	console.log(`marker width ${$(".ytp-progress-bar-padding").width()}`)
+
+
+	let offset = (sliceTimeInSeconds / totalTime) * $(".ytp-chapters-container").width()
+	console.log(`Offset ${offset}`)
+	return offset
+}
+
+function addCaptionSliceIndicator(leftPosition) {
 	jQuery('<div/>', {
 		id: 'yte-captionslice-timestamp',
 		css: {
@@ -111,6 +155,10 @@ function getTotalTime() {
     } else {
         return null
     }
+}
+
+function getTotalTimeInSeconds() {
+	return convertTimestampToSeconds(getTotalTime())
 }
 
 /*
