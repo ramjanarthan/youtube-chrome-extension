@@ -1,3 +1,5 @@
+console.log("Starting to load")
+
 // Observations
 var currentTabURL = ""
 
@@ -11,6 +13,35 @@ browser.runtime.onMessage.addListener((msg, sender, repsonse) => {
 	if (msg.command == 'confirm') {
 		processSearchRequest(msg.input, msg.url)
 	}
+})
+
+if ($('.ytp-subtitles-button')) {
+	var myButton = $('<button/>',
+	{
+		text: 'CC+',
+		click: function() { 
+			$('.ytp-subtitles-button').click()
+		},
+		class: 'ytp-button',
+	})
+
+	$(".ytp-left-controls").append(myButton)
+}
+
+// const playerElement = $(".ytp-chapters-container")
+// const resizeObs = new ResizeObserver( entries => {
+// 	console.log(`Size changed : ${entries}`)
+// })
+
+// // resizeObs.observe(playerElement)
+
+// // resizeObs.observe($("#ytd-player"))
+
+$("#ytd-player").resize(function() {
+	console.log("Resizing..")
+})
+$(".ytp-chapters-container").resize( function() {
+	console.log(`resizing container new size:  ${$(".ytp-chapters-container").width()}`)
 })
 
 // Search Request Handling
@@ -91,8 +122,6 @@ function getCaptionsForURL(url) {
 			return data[url]
 		})
 }
-
-console.log("Hello YT")
 
 // MARK: UI Manipulation 
 function displayCaptionSlices(slices) {
@@ -185,3 +214,5 @@ function convertTimestampToSeconds(time) {
 
 	return seconds
 }
+
+console.log("Loaded")
