@@ -1,27 +1,30 @@
+// Constants
+let youtubeVideoIDParamKey = "v"
+
 // Observations
-var currentTabURL = ""
-
-browser.tabs.onActivated.addListener(tab => {
-    browser.tabs.get(tab.tabId, current_tab_info => {
-        currentTabURL = current_tab_info.url
-    })
-})
-
 browser.webRequest.onBeforeRequest.addListener(
     processWebRequest,
-    {urls: ["<all_urls>"]}
+    {urls: ["https://www.youtube.com/api/timedtext*"]}
 )
 
 // Buisness logic
 function processWebRequest(requestDetails) {
-    console.log(`Processing web request: ${requestDetails}`)
+    console.log(`Processing web request: ${JSON.stringify(requestDetails)}`)
 
     if (!requestDetails.url.startsWith('https://www.youtube.com/api/timedtext?')) {
         console.log("skipping")
         return
     }
 
-    shouldInterceptRequest()
+    let requestURL = new URL(requestDetails.url)
+    let videoID = requestURL.searchParams.get(youtubeVideoIDParamKey)
+
+    if (!videoID) {
+        console.log("can't find video id, skipping")
+        return
+    }
+
+    shouldInterceptRequest(requestDetails.originUrl, videoID)
     .then((shouldIntercept) => {
         if (!shouldIntercept) {
             return 
@@ -29,7 +32,7 @@ function processWebRequest(requestDetails) {
 
         return interceptTimedTextRequest(requestDetails)
         .then(function (captionSlices) {
-            return saveCaptionsForURL(currentTabURL, captionSlices)
+            return saveCaptionsForURL(videoID, captionSlices)
         })
     })
     .catch(function (error) {
@@ -37,40 +40,44 @@ function processWebRequest(requestDetails) {
     });
 }
 
-function shouldInterceptRequest() {
-    let url = currentTabURL
-
-    if (!url) {
+function shouldInterceptRequest(originUrl, videoID) {
+    if (!originUrl) {
         return new Promise((_, reject) => {
             reject("No URL!?")
         })
     }
 
-    return hasCaptionsForURL(url)
+    if (originUrl.startsWith('moz-extension://')) {
+        return new Promise((resolve, _) => {
+            resolve(false)
+        })
+    }
+
+    return hasCaptionsForURL(videoID)
         .then((hasCaptions) => {
             return !hasCaptions
         })
 }
 
 // Storage APIs
-function hasCaptionsForURL(url) {
-    return browser.storage.local.get([url])
+function hasCaptionsForURL(videoID) {
+    return browser.storage.local.get([videoID])
     .then((data) => {
-        if (data[url]) {
-            console.log(`Has captions for : ${url}`)
+        if (data[videoID]) {
+            console.log(`Has captions for : ${videoID}`)
             return true
         } else {
-            console.log(`No captions for : ${url}`)
+            console.log(`No captions for : ${videoID}`)
             return false
         }
     })
 }
 
-function saveCaptionsForURL(url, captionSlices) {
-    console.log(`Setting captions for : ${url} captions: ${captionSlices}`)
+function saveCaptionsForURL(videoID, captionSlices) {
+    console.log(`Setting captions for : ${videoID} captions: ${captionSlices}`)
 
     let storageJSON = { }
-    storageJSON[url] = captionSlices
+    storageJSON[videoID] = captionSlices
     return browser.storage.local.set(storageJSON)
 }
 

@@ -1,12 +1,8 @@
+console.log("Starting to load")
+// Constants
+let youtubeVideoIDParamKey = "v"
+
 // Observations
-var currentTabURL = ""
-
-// browser.tabs.onActivated.addListener(tab => {
-//     browser.tabs.get(tab.tabId, current_tab_info => {
-//         currentTabURL = current_tab_info.url
-//     })
-// })
-
 browser.runtime.onMessage.addListener((msg, sender, repsonse) => {
 	if (msg.command == 'confirm') {
 		processSearchRequest(msg.input, msg.url)
@@ -55,14 +51,16 @@ function findClosestMatches(searchText, url) {
 		})
 	}
 
-	return getCaptionsForURL(url)
+	let requestURL = new URL(url)
+
+	return getCaptionsForURL(requestURL)
 		.then((captionSlices) => {
 			var result = []
 
 			console.log(`Reaching A ${captionSlices}`)
 			console.log(`Bool ${!captionSlices}`)
 
-			if (!captionSlices) {
+			if (!captionSlices || captionSlices.length == 0) {
 				console.log(`no slices ${result}`)
 				return result
 			}
@@ -82,17 +80,27 @@ function findClosestMatches(searchText, url) {
 		})
 }
 
-
+// INPUT: URL Obj
 function getCaptionsForURL(url) {
-	console.log(`getCaptionsForURL ${url}`)
-	return browser.storage.local.get([url])
+	if (!url || !url.searchParams) {
+		return new Promise((resolve, _) => {
+			resolve([])
+		})
+	}
+
+	let videoID = url.searchParams.get(youtubeVideoIDParamKey)
+	if (!videoID) {
+		return new Promise((resolve, _) => {
+			resolve([])
+		})
+	}
+
+	return browser.storage.local.get([videoID])
 		.then((data) => {
-			console.log(`data ${data[url]}`)
-			return data[url]
+			console.log(`data ${data[videoID]}`)
+			return data[videoID]
 		})
 }
-
-console.log("Hello YT")
 
 // MARK: UI Manipulation 
 function displayCaptionSlices(slices) {
@@ -185,3 +193,5 @@ function convertTimestampToSeconds(time) {
 
 	return seconds
 }
+
+console.log("Loaded")
