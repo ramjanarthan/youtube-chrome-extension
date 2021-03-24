@@ -10,4 +10,14 @@ $(function() {
             })
         })
     })
+
+    $('#clearButton').on('click', function() {
+        browser.tabs.query({currentWindow: true, active: true}, tabs => {
+            var activeTab = tabs[0]
+            browser.tabs.sendMessage(activeTab.id, { 
+                command: "clear",
+                msg: "from foreground"
+            })
+        })
+    })
 })
