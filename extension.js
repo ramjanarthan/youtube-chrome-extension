@@ -6,6 +6,9 @@ let youtubeVideoIDParamKey = "v"
 browser.runtime.onMessage.addListener((msg, sender, repsonse) => {
 	if (msg.command == 'confirm') {
 		processSearchRequest(msg.input, msg.url)
+	} else if (msg.command == 'clear') {
+		console.log(msg.msg)
+		hideCaptionSlices()
 	}
 })
 
@@ -30,7 +33,6 @@ function processSearchRequest(query, activeURL) {
 
 	let totalTime = getTotalTime()
 	let timeInSeconds = convertTimestampToSeconds(totalTime)
-	console.log(`Captured time:  ${totalTime} in seconds: ${timeInSeconds}`)
 }	
 
 /*
@@ -43,8 +45,6 @@ CaptionSlice {
 
 */
 function findClosestMatches(searchText, url) {
-	console.log(`findClosestMatches ${searchText}`)
-
 	if (searchText.length <= 0) {
 		return new Promise((resolve, _) => {
 			resolve([])
@@ -56,26 +56,17 @@ function findClosestMatches(searchText, url) {
 	return getCaptionsForURL(requestURL)
 		.then((captionSlices) => {
 			var result = []
-
-			console.log(`Reaching A ${captionSlices}`)
-			console.log(`Bool ${!captionSlices}`)
-
 			if (!captionSlices || captionSlices.length == 0) {
 				console.log(`no slices ${result}`)
 				return result
 			}
 
 			captionSlices.forEach(captionSlice => {
-				console.log(`Reaching X ${captionSlice}`)
-
 				if(captionSlice["text"].includes(searchText)) {
-					console.log(`Reaching Y`)
-
 					result.push(captionSlice)
 				}
 			})
 		
-			console.log(`Reaching C ${result}`)
 			return result
 		})
 }
@@ -127,16 +118,8 @@ function calculateLeftOffsetForCaptionSlice(captionSlice, totalTime) {
 
 
 	let sliceTimeInSeconds = captionSlice["startTime"] / 1000
-	console.log(`sliceTimeInSeconds ${sliceTimeInSeconds}`)
-	console.log(`totalTime ${totalTime}`)
-
-	console.log(`container width ${$(".ytp-chapters-container").width()}`)
-	console.log(`marker width ${$(".ytp-timed-markers-container").width()}`)
-	console.log(`marker width ${$(".ytp-progress-bar-padding").width()}`)
-
-
 	let offset = (sliceTimeInSeconds / totalTime) * $(".ytp-chapters-container").width()
-	console.log(`Offset ${offset}`)
+
 	return offset
 }
 
@@ -153,8 +136,8 @@ function addCaptionSliceIndicator(leftPosition) {
 			'position': 'absolute',
 		}
 	}).appendTo(".ytp-progress-list")
-}
-
+}   
+ 
 // MARK: Time Calculations
 function getTotalTime() {
     let endTime = $(".ytp-bound-time-right").text()

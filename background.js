@@ -1,18 +1,28 @@
+console.log("Loading")
 // Constants
 let youtubeVideoIDParamKey = "v"
 
-// Observations
+// Observe Tab updated
+browser.tabs.onUpdated.addListener(processTabUpdate)
+function processTabUpdate(_, changeInfo, tabInfo) {
+    if (changeInfo.url) { // URL has changed
+        browser.tabs.sendMessage(tabInfo.id, {
+            command: "clear",
+            url: changeInfo.url,
+            msg: "from bg"
+        })
+    }
+}
+
+// Observer web requests
 browser.webRequest.onBeforeRequest.addListener(
     processWebRequest,
     {urls: ["https://www.youtube.com/api/timedtext*"]}
 )
-
-// Buisness logic
 function processWebRequest(requestDetails) {
     console.log(`Processing web request: ${JSON.stringify(requestDetails)}`)
 
     if (!requestDetails.url.startsWith('https://www.youtube.com/api/timedtext?')) {
-        console.log("skipping")
         return
     }
 
@@ -20,7 +30,6 @@ function processWebRequest(requestDetails) {
     let videoID = requestURL.searchParams.get(youtubeVideoIDParamKey)
 
     if (!videoID) {
-        console.log("can't find video id, skipping")
         return
     }
 
@@ -64,35 +73,25 @@ function hasCaptionsForURL(videoID) {
     return browser.storage.local.get([videoID])
     .then((data) => {
         if (data[videoID]) {
-            console.log(`Has captions for : ${videoID}`)
             return true
         } else {
-            console.log(`No captions for : ${videoID}`)
             return false
         }
     })
 }
 
 function saveCaptionsForURL(videoID, captionSlices) {
-    console.log(`Setting captions for : ${videoID} captions: ${captionSlices}`)
-
     let storageJSON = { }
     storageJSON[videoID] = captionSlices
     return browser.storage.local.set(storageJSON)
 }
 
 function interceptTimedTextRequest(requestDetails) {
-    console.log("Loading Captions API: " + requestDetails.url);
-
     return fetch(requestDetails.url)
     .then(function (response) {
-        console.log("Loaded successfully")
-
         return response.json();
     })
     .then(function (myJson) {
-        console.log("Decoded successfully")
-
         let captionSlices = generateCaptionSlices(myJson)
         return captionSlices
     })
@@ -101,9 +100,6 @@ function interceptTimedTextRequest(requestDetails) {
     })
 }
 
-console.log("Hello")
-
-// Response Handling
 /*
 
 CaptionSlice {
@@ -140,3 +136,6 @@ function transformJSONToCaptionSlice(eventJson) {
         "text": text
     }
 }
+
+
+console.log("Loaded")
