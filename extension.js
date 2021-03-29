@@ -5,7 +5,10 @@ let youtubeVideoIDParamKey = "v"
 // Observations
 browser.runtime.onMessage.addListener((msg, sender, repsonse) => {
 	if (msg.command == 'confirm') {
-		processSearchRequest(msg.input, msg.url)
+		triggerCaptionsRequest()
+		setTimeout(function() {
+			processSearchRequest(msg.input, msg.url)
+		}, 200)
 	} else if (msg.command == 'clear') {
 		console.log(msg.msg)
 		hideCaptionSlices()
@@ -30,9 +33,6 @@ function processSearchRequest(query, activeURL) {
 				console.log('Couldnt find any accurate results')
 			}
 		})
-
-	let totalTime = getTotalTime()
-	let timeInSeconds = convertTimestampToSeconds(totalTime)
 }	
 
 /*
@@ -175,6 +175,14 @@ function convertTimestampToSeconds(time) {
 	}
 
 	return seconds
+}
+
+
+// Loading captions
+function triggerCaptionsRequest() {
+	$(".ytp-subtitles-button").click()
+
+	$(".ytp-subtitles-button").click()
 }
 
 console.log("Loaded")
