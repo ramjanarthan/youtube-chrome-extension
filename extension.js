@@ -12,6 +12,8 @@ browser.runtime.onMessage.addListener((msg, sender, repsonse) => {
 	} else if (msg.command == 'clear') {
 		console.log(msg.msg)
 		hideCaptionSlices()
+
+		browser.runtime.sendMessage({'command': 'popup-searchClear'})
 	}
 })
 
@@ -28,8 +30,10 @@ function processSearchRequest(query, activeURL) {
 				}, "")
 
 				console.log(`Here are your best times: ${times}`)
+				browser.runtime.sendMessage({'command': 'popup-searchSuccess'})
 				displayCaptionSlices(results)
 			} else {
+				browser.runtime.sendMessage({'command': 'popup-searchFail'})
 				console.log('Couldnt find any accurate results')
 			}
 		})

@@ -1,4 +1,17 @@
 $(function() {
+    // Observations
+    browser.runtime.onMessage.addListener((msg, sender, repsonse) => {
+        if (msg.command == 'popup-searchSuccess') {
+            $('#searchResultMessage').text("😄")
+            $('#searchResultMessage').show()
+        } else if (msg.command == 'popup-searchFail') {
+            $('#searchResultMessage').text("😵")
+            $('#searchResultMessage').show()
+        }  else if (msg.command == 'popup-searchClear') {
+            $('#searchResultMessage').hide()
+        }
+    })
+
     $('#confirmButton').on('click', function() {
         browser.tabs.query({currentWindow: true, active: true}, tabs => {
             var activeTab = tabs[0]
@@ -19,5 +32,5 @@ $(function() {
                 msg: "from foreground"
             })
         })
-    })
+    })  
 })
