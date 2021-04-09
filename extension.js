@@ -1,6 +1,22 @@
 console.log("Starting to load")
-// Constants
+// Constants / State
 let youtubeVideoIDParamKey = "v"
+
+var displayState = {
+	shouldDisplay: false,
+	captionSlices: []
+}
+
+function resetDisplayState() {
+	displayState = {
+		shouldDisplay: false,
+		captionSlices: []
+	}
+}
+
+function updateDisplayState(newState) {
+	displayState = newState
+}
 
 // Observations
 browser.runtime.onMessage.addListener((msg, sender, repsonse) => {
@@ -10,17 +26,26 @@ browser.runtime.onMessage.addListener((msg, sender, repsonse) => {
 			processSearchRequest(msg.input, msg.url)
 		}, 200)
 	} else if (msg.command == 'clear') {
-		console.log(msg.msg)
-		hideCaptionSlices()
+		removeCaptionSlices()
+		resetDisplayState()
 
 		browser.runtime.sendMessage({'command': 'popup-searchClear'})
 	}
 })
 
+elem = $(".ytp-chrome-bottom")[0];  
+let resizeObserver = new ResizeObserver(() => {
+	if (displayState.shouldDisplay) {
+		console.log('reseting display due to resize')
+		displayCaptionSlices(displayState.captionSlices)
+	}
+});
+resizeObserver.observe(elem);
+
 // Search Request Handling
 function processSearchRequest(query, activeURL) {
 	console.log(`Processing search request with query: ${query} url: ${activeURL}`)
-	hideCaptionSlices()
+	removeCaptionSlices()
 
 	findClosestMatches(query, activeURL)
 		.then((results) => {
@@ -32,8 +57,10 @@ function processSearchRequest(query, activeURL) {
 				console.log(`Here are your best times: ${times}`)
 				browser.runtime.sendMessage({'command': 'popup-searchSuccess'})
 				displayCaptionSlices(results)
+				updateDisplayState({ shouldDisplay: true, captionSlices: results})
 			} else {
 				browser.runtime.sendMessage({'command': 'popup-searchFail'})
+				resetDisplayState()
 				console.log('Couldnt find any accurate results')
 			}
 		})
@@ -99,6 +126,7 @@ function getCaptionsForURL(url) {
 
 // MARK: UI Manipulation 
 function displayCaptionSlices(slices) {
+	removeCaptionSlices()
 	let totalTime = getTotalTimeInSeconds()
 	if(!totalTime) {
 		console.error("Couldnt find total time")
@@ -111,7 +139,7 @@ function displayCaptionSlices(slices) {
 	})
 }
 
-function hideCaptionSlices() {
+function removeCaptionSlices() {
 	$(".yte-captionslice-timestamp").remove()
 }
 
@@ -180,7 +208,6 @@ function convertTimestampToSeconds(time) {
 
 	return seconds
 }
-
 
 // Loading captions
 function triggerCaptionsRequest() {
