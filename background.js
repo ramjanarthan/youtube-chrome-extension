@@ -1,4 +1,3 @@
-console.log("Loading")
 // Constants
 let youtubeVideoIDParamKey = "v"
 
@@ -20,8 +19,6 @@ browser.webRequest.onBeforeRequest.addListener(
     {urls: ["https://www.youtube.com/api/timedtext*"]}
 )
 function processWebRequest(requestDetails) {
-    console.log(`Processing web request: ${JSON.stringify(requestDetails)}`)
-
     if (!requestDetails.url.startsWith('https://www.youtube.com/api/timedtext?')) {
         return
     }
@@ -136,6 +133,3 @@ function transformJSONToCaptionSlice(eventJson) {
         "text": text
     }
 }
-
-
-console.log("Loaded")

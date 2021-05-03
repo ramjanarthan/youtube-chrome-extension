@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
 
-  "name": "Yellow",
+  "name": "Youtube Captions Searcher",
   "description": "This extension allows users to search for keywords in videos, and view all timestamps that it appears if captions are available",
   "version": "1.0",
   "permissions": [

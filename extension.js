@@ -1,4 +1,3 @@
-console.log("Starting to load")
 // Constants / State
 let youtubeVideoIDParamKey = "v"
 
@@ -36,7 +35,6 @@ browser.runtime.onMessage.addListener((msg, sender, repsonse) => {
 elem = $(".ytp-chrome-bottom")[0];  
 let resizeObserver = new ResizeObserver(() => {
 	if (displayState.shouldDisplay) {
-		console.log('reseting display due to resize')
 		displayCaptionSlices(displayState.captionSlices)
 	}
 });
@@ -44,7 +42,6 @@ resizeObserver.observe(elem);
 
 // Search Request Handling
 function processSearchRequest(query, activeURL) {
-	console.log(`Processing search request with query: ${query} url: ${activeURL}`)
 	removeCaptionSlices()
 
 	findClosestMatches(query, activeURL)
@@ -54,14 +51,12 @@ function processSearchRequest(query, activeURL) {
 					return prev + " " + `${curr["startTime"]/1000} secs, `
 				}, "")
 
-				console.log(`Here are your best times: ${times}`)
 				browser.runtime.sendMessage({'command': 'popup-searchSuccess'})
 				displayCaptionSlices(results)
 				updateDisplayState({ shouldDisplay: true, captionSlices: results})
 			} else {
 				browser.runtime.sendMessage({'command': 'popup-searchFail'})
 				resetDisplayState()
-				console.log('Couldnt find any accurate results')
 			}
 		})
 }	
@@ -119,7 +114,6 @@ function getCaptionsForURL(url) {
 
 	return browser.storage.local.get([videoID])
 		.then((data) => {
-			console.log(`data ${data[videoID]}`)
 			return data[videoID]
 		})
 }
@@ -129,7 +123,6 @@ function displayCaptionSlices(slices) {
 	removeCaptionSlices()
 	let totalTime = getTotalTimeInSeconds()
 	if(!totalTime) {
-		console.error("Couldnt find total time")
 		return
 	}
 	
@@ -212,8 +205,5 @@ function convertTimestampToSeconds(time) {
 // Loading captions
 function triggerCaptionsRequest() {
 	$(".ytp-subtitles-button").click()
-
 	$(".ytp-subtitles-button").click()
 }
-
-console.log("Loaded")
